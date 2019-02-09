@@ -11,7 +11,12 @@ def train(args):
     reviews = read_file(args.reviews)
     labels = read_file(args.labels)
 
-    network = SentimentNetwork(reviews[:-1000], labels[:-1000], min_count=20, polarity_cutoff=0.05, learning_rate=0.01)
+    network = SentimentNetwork(reviews[:-1000],
+                               labels[:-1000],
+                               hidden_nodes=args.hidden,
+                               min_count=args.minimum,
+                               polarity_cutoff=args.polarity,
+                               learning_rate=args.lr)
     network.train()
     network.save(args.output)
 
@@ -41,6 +46,32 @@ def parse_arguments():
                         default='model/',
                         type=str,
                         help='Path to the output directory, must be a string')
+
+    parser.add_argument('-h',
+                        '--hidden',
+                        default=10,
+                        type=int,
+                        required=False,
+                        help="Number of hidden nodes on the Network")
+
+    parser.add_argument('-r',
+                        '--lr',
+                        default=0.01,
+                        type=float,
+                        required=False,
+                        help='Learning Rate for the network training')
+
+    parser.add_argument('--minimum',
+                        default=20,
+                        type=int,
+                        required=False,
+                        help='Minimum count of a word to be considered on the vocabulary')
+
+    parser.add_argument('--polarity',
+                        default=0.05,
+                        type=float,
+                        required=False,
+                        help="Minimum absolute polarity on the positive to negative ratio to be considered")
 
     return parser.parse_args()
 
