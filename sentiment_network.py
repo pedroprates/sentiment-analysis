@@ -6,7 +6,14 @@ from collections import Counter
 
 
 class SentimentNetwork:
-    def __init__(self, reviews, labels, hidden_nodes=10, learning_rate=0.1, min_count=50, polarity_cutoff=0.01):
+    def __init__(self,
+                 reviews=None,
+                 labels=None,
+                 hidden_nodes=10,
+                 learning_rate=0.1,
+                 min_count=50,
+                 polarity_cutoff=0.01,
+                 path=None):
         """ Create a Neural Network with the given settings
 
         :param reviews: input training data with the reviews
@@ -15,8 +22,17 @@ class SentimentNetwork:
         :param learning_rate: learning rate of the trained network
         :param min_count: minimum count of each word to be considered valid
         :param polarity_cutoff: minimum polarity on the positive to negative reviews
+        :param path: The path to load the parameters from a previously trained network.
+
         """
         np.random.seed(1)
+
+        assert reviews is not None or path is not None, 'You should define either reviews or parameters'
+
+        if reviews is None:
+            self.hidden_nodes, self.learning_rate, self.review_vocab, \
+                self.label_vocab, self.word2index = self.load(path)
+            return
 
         # Define attributes
         self.reviews = reviews
@@ -251,6 +267,13 @@ class SentimentNetwork:
         np.save(os.path.join(path, 'weights_0_1.npy'), self.weights_0_1)
         print('\tWeights_1_2 on ' + path + 'weights_0_1.npy')
         np.save(os.path.join(path, 'weights_1_2.npy'), self.weights_1_2)
+        print('\tSaving network parameters on ' + path + 'parameters.npy')
+        network_parameters = np.array([self.hidden_nodes,
+                                       self.learning_rate,
+                                       self.review_vocab,
+                                       self.label_vocab,
+                                       self.word2index])
+        np.save(os.path.join(path, 'parameters.npy'), network_parameters)
 
         print('\nWeights saved successfully!')
 
@@ -264,9 +287,14 @@ class SentimentNetwork:
         if path[-1] is not '/':
             path += '/'
 
-        print('\nLoading weights...\n\tWeights_0_1 on ' + path + 'weigths_0_1.npy')
+        print('\nLoading parameters...\n\tWeights_0_1 on ' + path + 'weights_0_1.npy')
         self.weights_0_1 = np.load(os.path.join(path, 'weights_0_1.npy'))
         print('\tWeights_1_2 on ' + path + 'weights_1_2.npy')
         self.weights_1_2 = np.load(os.path.join(path, 'weights_1_2.npy'))
+        print('\tParameters on ' + path + 'parameters.npy')
+        parameters_path = os.path.join(path, 'parameters.npy')
+        hidden_nodes, learning_rate, review_vocab, label_vocab, word2index = np.load(parameters_path)
 
-        print('\nWeights loaded successfully!')
+        print('\nParameters loaded successfully!')
+
+        return hidden_nodes, learning_rate, review_vocab, label_vocab, word2index
