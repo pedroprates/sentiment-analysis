@@ -26,6 +26,8 @@ class SentimentNetwork:
         review_vocab, label_vocab = self.pre_process_data(reviews, labels)
         self.review_vocab = list(review_vocab)
         self.label_vocab = list(label_vocab)
+        self.reviews = reviews
+        self.labels = labels
 
         # Word dictionary
         self.word2index = {}
@@ -62,20 +64,18 @@ class SentimentNetwork:
 
         return review_vocab, label_vocab
 
-    def calculate_ratios(self, reviews, labels):
+    def calculate_ratios(self):
         """ Calculate the pos_neg_ratio, responsible for calculate the impact of the word into the prediction. To a
         better representative impact, the ratio is calculated by the log of the ratio of the positive impact on the
         negative impact
 
-        :param reviews: training reviews
-        :param labels: training labels
         :return: the positive to negative log ratio
         """
         pos_counter = Counter()
         neg_counter = Counter()
         pos_neg_ratios = Counter()
 
-        for review, label in zip(reviews, labels):
+        for review, label in zip(self.reviews, self.labels):
             for word in review.split(" "):
                 word = word.lower()
                 if label == 'POSITIVE':
@@ -137,18 +137,18 @@ class SentimentNetwork:
 
         return output * (1 - output)
 
-    def train(self, training_reviews_raw, training_labels):
+    def train(self):
         """ Training the network
 
         :param training_reviews_raw: Training reviews raw, a list of strings
         :param training_labels: Training labels, a list of strings
         """
 
-        assert len(training_reviews_raw) == len(training_labels), 'There must be the same amount of training reviews' \
+        assert len(self.reviews) == len(self.labels), 'There must be the same amount of training reviews' \
                                                                   'and training labels.'
 
         training_reviews = list()
-        for review in training_reviews_raw:
+        for review in self.reviews:
             review_ids = set([self.word2index[word] for word in review.split(" ") if word in self.word2index.keys()])
             training_reviews.append(list(review_ids))
 
@@ -156,7 +156,7 @@ class SentimentNetwork:
         start = time.time()
 
         for i in range(len(training_reviews)):
-            review, label = training_reviews[i], training_labels[i]
+            review, label = training_reviews[i], self.labels[i]
             label = self.get_target_for_label(label)
 
             # Forward Pass
@@ -234,10 +234,11 @@ class SentimentNetwork:
             elapsed_time = float(time.time() - start)
             reviews_per_second = i / elapsed_time if elapsed_time > 0 else 0
 
-            sys.stdout.write('\rProgress: ' + str(100 * i/float(len(testing_reviews)))[:4]
-                             + '% Speed(reviews/sec): ' + str(reviews_per_second)[:5]
-                             + ' #Correct: ' + str(correct) + ' #Tested: ' + str(i+1)
-                             + ' Testing Accuracy: ' + str(correct * 100 / float(i+1))[:4] + '%')
+            if verbose:
+                sys.stdout.write('\rProgress: ' + str(100 * i/float(len(testing_reviews)))[:4]
+                                 + '% Speed(reviews/sec): ' + str(reviews_per_second)[:5]
+                                 + ' #Correct: ' + str(correct) + ' #Tested: ' + str(i+1)
+                                 + ' Testing Accuracy: ' + str(correct * 100 / float(i+1))[:4] + '%')
 
     def save(self, path):
         """ Save the weights on .npy files
