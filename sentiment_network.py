@@ -19,15 +19,15 @@ class SentimentNetwork:
         np.random.seed(1)
 
         # Define attributes
+        self.reviews = reviews
+        self.labels = labels
         self.min_count = min_count
         self.polarity_cutoff = polarity_cutoff
-        self.pos_neg_ratios = self.calculate_ratios(reviews, labels)
+        self.pos_neg_ratios = self.calculate_ratios()
 
         review_vocab, label_vocab = self.pre_process_data(reviews, labels)
         self.review_vocab = list(review_vocab)
         self.label_vocab = list(label_vocab)
-        self.reviews = reviews
-        self.labels = labels
 
         # Word dictionary
         self.word2index = {}
