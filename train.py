@@ -19,6 +19,8 @@ def train(args):
                                learning_rate=args.lr)
     network.train()
     network.save(args.output)
+    print('\n\nTesting:\n')
+    network.test(reviews[-1000:], labels[-1000:], verbose=True)
 
 
 def read_file(filepath):
@@ -47,15 +49,13 @@ def parse_arguments():
                         type=str,
                         help='Path to the output directory, must be a string')
 
-    parser.add_argument('-h',
-                        '--hidden',
+    parser.add_argument('--hidden',
                         default=10,
                         type=int,
                         required=False,
                         help="Number of hidden nodes on the Network")
 
-    parser.add_argument('-r',
-                        '--lr',
+    parser.add_argument('--lr',
                         default=0.01,
                         type=float,
                         required=False,
