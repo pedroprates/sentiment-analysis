@@ -139,9 +139,6 @@ class SentimentNetwork:
 
     def train(self):
         """ Training the network
-
-        :param training_reviews_raw: Training reviews raw, a list of strings
-        :param training_labels: Training labels, a list of strings
         """
 
         assert len(self.reviews) == len(self.labels), 'There must be the same amount of training reviews' \
